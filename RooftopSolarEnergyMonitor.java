@@ -1,4 +1,3 @@
-2620030332_Neeharika:
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
