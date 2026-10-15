@@ -1,123 +1,166 @@
-import java.util.Scanner;
+2620030332_Neeharika:
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.*;
 
-public class RooftopSolarEnergyMonitor {
+// ==========================================
+// MODULE 4: OOP, Encapsulation & toString()
+// ==========================================
+class SolarReading implements Comparable<SolarReading> {
+private String timestamp; // Module 5: String abstraction
+private double powerOutput; // in kilowatts
 
-    // METHOD 1: Calculates daily energy generated (kWh = kW * hours)
-    static double calculateEnergy(double power, double hours) {
-        return power * hours; // Arithmetic operator (*)
-    }
+public SolarReading(String timestamp, double powerOutput) {
+this.timestamp = timestamp;
+this.powerOutput = powerOutput;
+}
 
-    // METHOD 2: Calculates total cumulative energy using a FOR-EACH loop
-    static double calculateTotal(double[] energyReadings) {
-        double total = 0.0;
-        
-        // CONCEPT: FOR-EACH LOOP
-        for (double singleDayEnergy : energyReadings) {
-            total += singleDayEnergy; // Arithmetic operator (+=)
-        }
-        
-        return total;
-    }
+public double getPowerOutput() { return powerOutput; }
+public String getTimestamp() { return timestamp; }
 
-    public static void main(String[] args) {
-        // CONCEPT: SCANNER CLASS
-        Scanner sc = new Scanner(System.in);
+@Override
+public String toString() {
+return timestamp + " : " + powerOutput + " kW";
+}
 
-        // CONCEPT: DATA TYPES (String, int, double, boolean)
-        String ownerName;
-        int numberOfDays;
-        double panelPower;
-        double totalEnergy;
-        boolean isSystemActive = true;
+// MODULE 5: Comparable interface for ordering objects
+@Override
+public int compareTo(SolarReading other) {
+return Double.compare(this.powerOutput, other.powerOutput);
+}
+}
 
-        System.out.println("=== Rooftop Solar Energy Monitor System ===");
-        
-        System.out.print("Enter Owner Name: ");
-        ownerName = sc.nextLine();
+class SolarEnergyMonitor {
+// MODULE 6: Collections Framework (List, Map) & Generics
+private List<SolarReading> readings;
 
-        System.out.print("Enter Solar Panel Power Rating (in kW): ");
-        panelPower = sc.nextDouble();
+public SolarEnergyMonitor() {
+this.readings = new ArrayList<>();
+}
 
-        System.out.print("Enter Number of Days to Monitor: ");
-        numberOfDays = sc.nextInt();
+public void addReading(SolarReading reading) {
+readings.add(reading);
+}
 
-        // Array data type to store daily generation
-        double[] dailyEnergy = new double[numberOfDays];
+public List<SolarReading> getReadings() {
+return readings;
+}
 
-        // CONCEPT: FOR LOOP (Used for taking daily readings)
-        System.out.println("\n--- Enter Sunlight Hours ---");
-        for (int day = 0; day < numberOfDays; day++) {
-            System.out.print("Day " + (day + 1) + " Sunlight Hours: ");
-            double sunlightHours = sc.nextDouble();
-            
-            // Method call
-            dailyEnergy[day] = calculateEnergy(panelPower, sunlightHours);
-        }
+// MODULE 3: Summation & Average techniques
+public double totalEnergy() {
+return readings.stream()
+.mapToDouble(SolarReading::getPowerOutput)
+.sum();
+}
 
-        // Method call using FOR-EACH LOOP inside calculateTotal()
-        totalEnergy = calculateTotal(dailyEnergy);
+public double averagePower() {
+return readings.stream()
+.mapToDouble(SolarReading::getPowerOutput)
+.average()
+.orElse(0.0);
+}
 
-        // Display Summary Section
-        System.out.println("\n=================================");
-        System.out.println("     SOLAR ENERGY REPORT        ");
-        System.out.println("=================================");
-        System.out.println("System Owner : " + ownerName);
-        System.out.println("Panel Capacity: " + panelPower + " kW");
+// MODULE 6: Stream Pipelines (max, filter, collect)
+public Optional<SolarReading> peakPower() {
+return readings.stream()
+.max(Comparator.comparingDouble(SolarReading::getPowerOutput));
+}
 
-        // CONCEPT: WHILE LOOP (Used for displaying daily array elements)
-        System.out.println("\n--- Daily Breakdown ---");
-        int dayCounter = 0;
-        while (dayCounter < numberOfDays) {
-            System.out.println("Day " + (dayCounter + 1) + ": " + dailyEnergy[dayCounter] + " kWh");
-            dayCounter++; // Arithmetic operator (++)
-        }
+// MODULE 3: Recursion example (e.g., recursive count of readings above threshold)
+public int countAboveThreshold(double threshold, int index) {
+if (index >= readings.size()) {
+return 0;
+}
+int count = (readings.get(index).getPowerOutput() > threshold) ? 1 : 0;
+return count + countAboveThreshold(threshold, index + 1);
+}
 
-        System.out.println("\nTotal Generation: " + totalEnergy + " kWh");
+// MODULE 6: Collectors (groupingBy for advanced reports)
+public Map<Boolean, List<SolarReading>> partitionByPerformance(double threshold) {
+return readings.stream()
+.collect(Collectors.partitioningBy(r -> r.getPowerOutput() >= threshold));
+}
 
-        // CONCEPT: CONDITIONAL STATEMENTS (if - else if - else ladder)
-        double benchmarkThreshold = numberOfDays * panelPower * 4.0;
-        
-        if (totalEnergy >= benchmarkThreshold) {
-            System.out.println("System Performance Status: Excellent");
-        } else if (totalEnergy >= (benchmarkThreshold - 10.0)) { // Arithmetic operator (-)
-            System.out.println("System Performance Status: Good / Average");
-        } else {
-            System.out.println("System Performance Status: Needs Inspection (Low Efficiency)");
-        }
+public void displayReadings() {
+readings.forEach(System.out::println);
+}
+}
 
-        // CONCEPT: DO-WHILE LOOP (Used to keep menu active)
-        int menuChoice;
-        do {
-            System.out.println("\n--- Interactive Menu Options ---");
-            System.out.println("1. Show Total Generation Summary");
-            System.out.println("2. Calculate Average Daily Output");
-            System.out.println("3. Exit Program");
-            System.out.print("Select an option (1-3): ");
-            menuChoice = sc.nextInt();
+public class RooftopSolarMonitorApp {
 
-            // CONCEPT: SWITCH CASE (Used for menu selection)
-            switch (menuChoice) {
-                case 1:
-                    System.out.println("Result: Total Energy generated over " + numberOfDays + " day(s) is " + totalEnergy + " kWh.");
-                    break;
+// MODULE 4: Exception Handling using 'throws'
+public static void main(String[] args) throws IOException {
+// MODULE 1: Console I/O with Scanner & Primitive variables
+Scanner scanner = new Scanner(System.in);
+SolarEnergyMonitor monitor = new SolarEnergyMonitor();
 
-                case 2:
-                    double averageEnergy = totalEnergy / numberOfDays; // Arithmetic operator (/)
-                    System.out.println("Result: Average Daily Generation is " + averageEnergy + " kWh/day.");
-                    break;
+System.out.println("Enter solar panel readings (<timestamp> <powerOutput>). Type 'end' to finish:");
 
-                case 3:
-                    System.out.println("Exiting Rooftop Solar Monitor. Thank you!");
-                    isSystemActive = false;
-                    break;
+// MODULE 2: Control Flow (while loop, break, continue, if-else)
+while (true) {
+try {
+String input = scanner.nextLine();
 
-                default:
-                    System.out.println("Invalid Selection! Please choose 1, 2, or 3.");
-                    break;
-            }
+// MODULE 5: String comparison and manipulation (equalsIgnoreCase, trim, split)
+if (input.equalsIgnoreCase("end")) {
+break;
+}
 
-        } while (menuChoice != 3 && isSystemActive);
+String[] parts = input.trim().split("\\s+");
+if (parts.length != 2) {
+System.out.println("Invalid input format. Use: <timestamp> <powerOutput>");
+continue; // Module 2: continue statement
+}
 
-        sc.close();
-    }
+String timestamp = parts[0];
+// MODULE 1: Typecasting / parsing wrapper classes
+double powerOutput = Double.parseDouble(parts[1]);
+
+monitor.addReading(new SolarReading(timestamp, powerOutput));
+
+2620030332_Neeharika:
+} catch (NumberFormatException e) {
+// MODULE 4: Exception handling (try-catch block)
+System.out.println("Invalid power value. Please enter a numeric value.");
+} finally {
+// MODULE 4: try-catch-finally block demonstration
+// (Cleanup or execution tracking can go here)
+}
+}
+
+// Display basic results using formatted printing (Module 1)
+System.out.println("\n--- Solar Panel Energy Readings ---");
+monitor.displayReadings();
+
+System.out.printf("Total Energy Generated: %.2f kW\n", monitor.totalEnergy());
+System.out.printf("Average Power Output: %.2f kW\n", monitor.averagePower());
+
+monitor.peakPower().ifPresent(p -> System.out.println("Peak Power Output: " + p));
+
+// ==========================================
+// MODULE 5 & 6: File I/O & File Streams
+// ==========================================
+Path filePath = Paths.get("solar_report.txt");
+
+// Writing text files using modern java.nio.file APIs & try-with-resources
+try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+writer.write("=== SOLAR MONITOR REPORT ===\n");
+for (SolarReading r : monitor.getReadings()) {
+writer.write(r.toString() + "\n");
+}
+writer.write("Total: " + monitor.totalEnergy() + " kW\n");
+System.out.println("\nSuccessfully saved report to file: " + filePath.toAbsolutePath());
+} catch (IOException e) {
+System.out.println("Error writing to file: " + e.getMessage());
+}
+
+// Reading file lines back as a stream (Module 6 feature)
+System.out.println("\n--- Reading file lines back using Stream API ---");
+try (Stream<String> lines = Files.lines(filePath)) {
+lines.limit(4).forEach(System.out::println);
+}
+
+scanner.close();
+}
 }
