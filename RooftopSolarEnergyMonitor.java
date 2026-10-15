@@ -117,8 +117,6 @@ String timestamp = parts[0];
 double powerOutput = Double.parseDouble(parts[1]);
 
 monitor.addReading(new SolarReading(timestamp, powerOutput));
-
-2620030332_Neeharika:
 } catch (NumberFormatException e) {
 // MODULE 4: Exception handling (try-catch block)
 System.out.println("Invalid power value. Please enter a numeric value.");
